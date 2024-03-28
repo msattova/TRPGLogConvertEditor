@@ -1,0 +1,295 @@
+import { formatChatlog } from "./modules/convert_chatlog.mjs";
+import { joinMessage } from "./modules/join_messages.mjs";
+import { participant, ogp_setting} from "./modules/data_struct.mjs";
+
+const fileInput = document.querySelector("#js-input");
+const codeChatlog = document.querySelector("#js-code");
+const previewChatlog = document.querySelector("#js-preview");
+
+const addParticipantButton = document.querySelector("#js-addButton");
+const participantResister = document.querySelector("#js-participant-resister");
+const participantRowTemplate = document.querySelector("#js-participant-template");
+
+const downloadButton = document.querySelector("#js-download");
+
+const regBeforeChatlog = /[\s\S]+<div class="chatlog-wrap">/;
+
+const regAfterChatlog = /<[^<]+>\s*<div class="controll hidden">[\s\S]*/;
+
+const regNotVoid = /.*\S+.*/;
+
+/* 入力として受け取ったHTMLファイルの中身を取得 */
+const getHTML = (file) => {
+  return new Promise((resolve) => {
+    let fr = new FileReader();
+    fr.onload = (e) => {
+      resolve(e.currentTarget.result);
+    };
+    fr.readAsText(file);
+  });
+};
+
+/* .chatlog以外の部分を除外 */
+const removeNotChatlog = (htmlData) => {
+  return htmlData.replace(regBeforeChatlog, '').replace(regAfterChatlog, '');
+};
+
+/* HTMLのチャットログ部分を抽出してタグ等に置換処理 */
+const filterHTML = (htmlData) => {
+  let chatlogs = htmlData.replaceAll('\n', '')
+                         .replaceAll(/(<div class="main-logs">)/g, '$1\n')
+                         .replaceAll("</div>", "</div>\n")
+                         .split("\n");
+  let str = formatChatlog(chatlogs).join('\n');
+  return str;
+};
+
+/* プレビューへの反映 */
+const reflectPreview = (code) => {
+  previewChatlog.innerHTML = code;
+  const sections = previewChatlog.querySelectorAll('section[class="chap"]');
+  for (let i = 0; i< sections.length; i++) {
+    sections[i].setAttribute('id', `sec-${i+1}`)
+  }
+  const sections_ = previewChatlog.querySelectorAll("section");
+  //joinMessage(sections_);
+};
+
+const getParticipantsData = () => {
+  const participants_list = participantResister.children;
+  const participants = new Array();
+  for (const el of participants_list){
+    const tmp_participant = Object.create(participant);
+    tmp_participant.role = document.querySelector(`#${el.id} select[name="role"]`).value;
+    tmp_participant.person_name = document.querySelector(`#${el.id} input[name="participant-name"]`).value;
+    tmp_participant.personal_color = document.querySelector(`#${el.id} input[name="charactor-color"]`).value;
+    tmp_participant.charactor_name = document.querySelector(`#${el.id} input[name="charactor-name"]`).value;
+    tmp_participant.charactor_sheet = document.querySelector(`#${el.id} input[name="charactor-sheet"]`).value;
+    tmp_participant.image_path = document.querySelector(`#${el.id} input[name="charactor-image"]`).value;
+
+    participants.push(tmp_participant);
+  }
+  return participants;
+};
+
+const getOGPData = () => {
+  const ogp_data = Object.create(ogp_setting);
+  ogp_data.title = document.querySelector("#session-title").value;
+  ogp_data.description = document.querySelector("#session-description").value;
+  ogp_data.url = document.querySelector("#ogp-url").value;
+  ogp_data.site_name = document.querySelector("#ogp-site_name").value;
+  return ogp_data;
+};
+
+const makePartsTemplate = async () => {
+  const templates = [fetch('./templates/participant_list.html').then(r => r.text()),
+                     fetch('./templates/charactor_list.html').then(r => r.text()),
+                     fetch('./templates/index_section.html').then(r => r.text()),
+                     fetch('./templates/index_preplay.html').then(r => r.text())];
+  const [participant_list, charactor_list, index_section, index_preplay ] = await Promise.all(templates);
+  return {
+    participant: participant_list,
+    charactor: charactor_list,
+    index_section: index_section,
+    index_preplay: index_preplay,
+  };
+};
+
+const makeStyleTemplate = async () => {
+  const resetstyle = fetch('./templates/css/reset.css').then(r=>r.text());
+  const style = fetch('./templates/css/style.css').then(r=>r.text());
+  const personal_style = fetch('./templates/css/personalstyle.css').then(r=>r.text());
+  const personal_parts = fetch('./templates/css/personal_parts.css').then(r=>r.text());
+  const personal_root = fetch('./templates/css/personal_parts_root.css').then(r=>r.text());
+
+  const script = fetch('./templates/src/script.js').then(r=>r.text());
+  const [res_reset, res_style, res_personal, res_personal_parts, res_personal_root, res_script] = await Promise.all([resetstyle, style, personal_style, personal_parts, personal_root, script]);
+  return {
+    reset: res_reset,
+    sytle: res_style,
+    personal: res_personal,
+    personl_parts: res_personal_parts,
+    personal_root: res_personal_root,
+    script: res_script
+  };
+};
+
+const makePersonalStyle = (participants, personal, personal_parts, personal_root) => {
+  const define_colors = participants.map((el, i) =>
+    personal_root.replace('{{ num }}', i).replace('{{ color }}', (el.personal_color ? el.personal_color : '#000'))
+  ).join('\n');
+  const parts = participants.map((el, i) =>
+    personal_parts.replaceAll('{{ num }}', i)
+  ).join('\n');
+  return personal.replace('{{ define-colors }}', define_colors).replace('{{ parts }}', parts);
+};
+
+const makeIndex = (index_preplay, index_section) => {
+  const sections = previewChatlog.querySelectorAll('section');
+  const index_list = Array();
+  for (let sec of sections){
+    if(sec.classList.contains('preplay')){
+      index_list.push(index_preplay.replace('{{ preplay-title }}', sec.querySelector('h2').textContent)
+                                   .replace('{{ target-id }}', sec.id));
+    } else if (sec.classList.contains('chap')){
+      index_list.push(index_section.replace('{{ section-title }}', sec.querySelector('h2').textContent)
+                                 .replace('{{ target-id }}', sec.id));
+    }
+  }
+  return index_list.join('\n');
+};
+
+const makeLogHTML = async (participants, ogp_data) => {
+  const partsTemplates = await makePartsTemplate();
+  const stylesTemplats = await makeStyleTemplate();
+
+  const participantsHTML = participants.map((el, i) =>
+    partsTemplates.participant.replaceAll('{{ role-lowercase }}', el.role)
+                              .replaceAll('{{ role }}', el.role.toUpperCase())
+                              .replaceAll('{{ num }}', i)
+                              .replaceAll('{{ participant-name }}', el.person_name)
+                              .replaceAll('{{ charactor-name }}', el.charactor_name)
+  );
+  //キャラ名の欄が空ならキャラクターリストに入れないようにしている
+  const charactorsHTML = participants.filter(el => el.charactor_name).map((el, i) =>
+    partsTemplates.charactor.replaceAll('{{ num }}', i)
+                            .replaceAll('{{ charactor-name }}', el.charactor_name)
+                            .replaceAll('{{ charactor-sheet }}', el.charactor_sheet)
+                            .replaceAll('{{ player-name }}', el.person_name)
+                            .replaceAll('{{ image-src }}', el.image_path)
+  );
+  const indexHTML = makeIndex(partsTemplates.index_preplay, partsTemplates.index_section);
+
+  const personal_style = makePersonalStyle(participants, stylesTemplats.personal, stylesTemplats.personl_parts, stylesTemplats.personal_root);
+  let ret_data = fetch('./templates/template.html').then(r=>r.text()).then(t=>{
+    const ret = t.replace('{{ reset }}', stylesTemplats.reset)
+                 .replace('{{ personal }}', personal_style)
+                 .replace('{{ style }}', stylesTemplats.sytle)
+                 .replace('{{ script }}', stylesTemplats.script)
+                 .replaceAll("{{ title }}", ogp_data.title)
+                 .replace('{{ participants-list }}', participantsHTML.join('\n'))
+                 .replace('{{ charactor-list }}', charactorsHTML.join('\n'))
+                 .replace('{{ index }}', indexHTML)
+                 .replace('{{ chatlogs }}', previewChatlog.innerHTML);
+    return ret;
+  });
+  return ret_data;
+};
+
+const downloadHTML = (filename, data) => {
+  const blob = new Blob([data]);
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = URL.createObjectURL(blob);
+  link.click();
+
+  URL.revokeObjectURL(link.href);
+};
+
+/* 参加者欄を追加 */
+const cloneParticipantRow = (e, selected_role="pl") => {
+  const content = participantRowTemplate.content.cloneNode(true);
+  const select_item = content.querySelector(".select-role");
+  const input_list = content.querySelectorAll("div.input");
+  const del_button = content.querySelector(".del > a");
+  const identifier = `${Date.now()}-${participantResister.children.length}`;
+
+  const participants_row = content.querySelector(".participants-row");
+
+
+  select_item.children[0].attributes['for'].value = `role-${identifier}`;
+  select_item.children[1].attributes['id'].value = `role-${identifier}`;
+  select_item.children[1].querySelector(`option[value="${selected_role}"]`).setAttribute("selected", true);
+  for (let i=0; i<input_list.length; i++) {
+    const base_id = input_list[i].children[1].attributes['id'].value;
+    input_list[i].children[0].attributes['for'].value = `${base_id}-${identifier}`;
+    input_list[i].children[1].attributes['id'].value = `${base_id}-${identifier}`;
+  }
+
+  participants_row.attributes['id'].value = `${participants_row.id}-${identifier}`;
+
+  del_button.setAttribute('onclick', `deleteElement(\"${participants_row.id}\")`);
+
+  participantResister.appendChild(content);
+};
+
+/* ファイル読み込み時の処理 */
+fileInput.addEventListener('change', async (e) => {
+  codeChatlog.value = '';
+  const file = e.currentTarget.files[0];
+  if (!file) return;
+  const text = await getHTML(file);
+  const chatlogs = removeNotChatlog(text);
+  const filtered = filterHTML(chatlogs);
+  codeChatlog.value = filtered;
+  reflectPreview(filtered);
+});
+
+/* textareaの文字列が編集された時の処理 */
+codeChatlog.addEventListener('input', (e) => {
+  const replaced = e.target.value.replaceAll(/(<div.+>)\n/g, '$1');
+
+  const preplayHeader = replaced.replace(/\n\$\s(.+)\n/g, '\n<section class="preplay" id="chara-make"><h2>$1</h2><details><summary>クリックして$1を開く</summary>\n<div class="chatlog">\n');
+
+  const includeHeader = preplayHeader.replaceAll(/\n#\s(.+)\n/g, '\n<section class="chap"><h2>$1</h2>\n<div class="chatlog">\n');
+
+
+  const splited = includeHeader.split('\n').filter(val => regNotVoid.exec(val));
+
+
+  let hasSection = false;
+
+  for (let i in splited) {
+    if(splited[i].match(/<section/)) {
+      if (hasSection){
+        splited[i] = `</div></section>${splited[i]}`;
+      }
+      hasSection = !hasSection;
+    }
+  }
+
+  let preplay = false;
+
+  for (let i in splited) {
+    if(splited[i].match(/<details/)) {
+      preplay = true;
+    }
+    if (preplay && splited[i].match(/<\/section>/)) {
+      splited[i] = splited[i].replace(/<\/div><\/section>(.+)/, `</div></details></section>$1`);
+      break;
+    }
+  }
+
+  reflectPreview(splited.join('\n'));
+  let el;
+  if (document.querySelector('#js-preview .chatlog') !== undefined) {
+    el = document.querySelector('#js-preview .chatlog');
+  } else {
+    el = document.querySelector('#js-preview');
+  }
+  Sortable.create(el, {
+    animation: 150
+  });
+
+});
+
+addParticipantButton.addEventListener('click', cloneParticipantRow);
+
+
+downloadButton.addEventListener('click', async (e) => {
+  const participants = getParticipantsData();
+  const ogp_data = getOGPData();
+  const data = await makeLogHTML(participants, ogp_data);
+  downloadHTML(`${ogp_data.title}-log.html`, data);
+}, false);
+
+/* ページロード時に自動的に列を生成するようにする */
+cloneParticipantRow(null, "gm");
+[...Array(4)].map(() => cloneParticipantRow(null, "pl"));
+
+Sortable.create(participantResister, {
+  animation: 150,
+  handle: '.handle',
+  dragClass: 'dragging',
+});
+

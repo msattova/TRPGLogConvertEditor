@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja" prefix="og: http://ogp.md/ns#">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="format-detection" content="telephone=no" />
+  <!--- discord等で埋め込みが表示されるようにするためのOGP設定 --->
+  <meta property="og:url" content="{{ url }}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="{{ title }}" />
+  <meta property="og:description" content="{{ site-description }}" />
+  <meta property="og:site_name" content="{{ site-name }}" />
+  <meta name="twitter:card" content="{{ site-description-tweet }}" />
+  <!----->
+
+  <base target="_self" />
+
+  <title>{{ title }}</title>
+
+  <link rel="stylesheet" type="text/css" href="reset.css" />
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <link rel="stylesheet" type="text/css" href="personalstyle.css" />
+  <link rel="stylesheet" type="text/css" href="data_style.css" />
+
+
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
+
+</head>
+
+<body>
+  {{ header }}
+
+  <div class="wrapper">
+    <nav class="navigation" id="js-nav" aria-hidden="true" inert>
+      <div class="disable-check">
+        <input type="checkbox" name="remove" id="js-checkboxRemove" checked />
+        <label for="js-checkboxRemove">メインタブ以外を非表示</label>
+      </div>
+      <div class="disable-check">
+        <input type="checkbox" name="remove" id="js-timestampRemove" checked />
+        <label for="js-timestampRemove">タイムスタンプを非表示</label>
+      </div>
+      <div class="check">
+        <input type="checkbox" name="imageclip" id="js-checkboxImageclip" />
+        <label for="js-checkboxImageclip">画像を小さく表示</label>
+      </div>
+      {{ charactor-list }}
+    </nav>
+
+    <main class="main is-disable is-disable-timestamp" id="js-main">
+      {{ participants }}
+      {{ index }}
+      <div class="main-logs">
+        {{ preplay }}
+        {{ section #act1 }}
+      </div>
+    </main>
+  </div>
+
+  {{footer}}
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>

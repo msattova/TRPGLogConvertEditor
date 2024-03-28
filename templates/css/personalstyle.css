@@ -1,0 +1,9 @@
+:root {
+  {{ define-colors }}
+}
+
+{{ parts }}
+
+.participants li .charactor-name::before {
+  background-color: var(--my-color);
+}

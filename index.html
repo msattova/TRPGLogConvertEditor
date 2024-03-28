@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="format-detection" content="telephone=no" />
+  <!--- discord等で埋め込みが表示されるようにするためのOGP設定 --->
+  <meta property="og:url" content="#" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="ログコンバーター" />
+  <meta property="og:description" content="TRPGセッションログのコンバーターです" />
+  <meta property="og:site_name" content="" />
+  <meta name="twitter:card" content="TRPGセッションログのコンバーターです" />
+  <!----->
+
+  <base target="_self" />
+
+  <title>ログコンバーター</title>
+
+  <link rel="stylesheet" type="text/css" href="css/reset.css" />
+  <link rel="stylesheet" type="text/css" href="css/style.css" />
+
+<!-- jsDelivr :: Sortable :: Latest (https://www.jsdelivr.com/package/npm/sortablejs) -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+<script>
+  // 削除用関数
+  const deleteElement = (id) => {
+    const target = document.querySelector(`#${id}`);
+    target.remove();
+  };
+</script>
+
+</head>
+
+<body>
+
+  <header>
+    <h1>ログコンバーター</h1>
+  </header>
+
+  <main>
+
+    <form>
+      <template id="js-participant-template">
+        <div class="participants-row full-width" id="participants-row">
+          <div class="handle"><b>::</b></div>
+          <div class="setting select-role">
+            <label for="role">GM / PL</label>
+            <select name="role" id="role">
+              <option value="gm">GM</option>
+              <option value="sub-gm">サブGM</option>
+              <option value="pl">PL</option>
+            </select>
+          </div>
+          <details>
+            <summary>各種設定（クリックして展開）</summary>
+            <div class="setting col">
+              <div class="input full-width">
+                <label for="input-name">GM / PLの名前</label>
+                <input type="text" name="participant-name" id="input-name">
+              </div>
+<div class="input full-width">
+  <label for="input-color">文字色</label>
+  <input type="text" name="charactor-color" id="input-color">
+</div>
+              <div class="input full-width">
+                <label for="input-pc">キャラクターの名前</label>
+                <input type="text" name="charactor-name" id="input-pc">
+              </div>
+              <div class="input full-width">
+                <label for="input-charasheet">キャラシのURL</label>
+                <input type="text" name="charactor-sheet" id="input-charasheet">
+              </div>
+              <div class="input full-width">
+                <label for="input-charaimage">キャラ立ち絵へのパス<br />（※HTMLがわかる人向け。&lt;img&gt;タグのsrc属性に指定する値を入れてください）</label>
+                <input type="text" name="charactor-image" id="input-charaimage">
+              </div>
+            </div>
+          </details>
+          <div class="setting del">
+            <a>削除</a>
+          </div>
+
+        </div>
+      </template>
+      <lebel for="log-html">ログファイルを選択</lebel>
+      <input type="file" name="input-file" id="js-input" accept="text/html">
+      <div class="grid-column">
+        <div class="code">
+          <textarea name="chatlog" id="js-code"></textarea>
+        </div>
+        <div class="preview" id="js-preview">
+        </div>
+      </div>
+      <div class="flex-row">
+
+        <fieldset class="participants-list">
+          <legend>参加者一覧設定</legend>
+          <div class="resister" id="js-participant-resister">
+          </div>
+          <div class="add">
+            <button type="button" id="js-addButton">参加者を追加</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>セッション概要設定</legend>
+          <div class="resister-row wide" id="js-ogp-setting">
+            <div class="flex-col">
+              <div class="setting">
+                <label for="session-title">セッションタイトル</label>
+                <input type="text" name="title" id="session-title">
+              </div>
+              <div class="setting">
+                <label for="session-description">セッションの概要・あらすじ</label>
+                <textarea class="description" id="session-description" autocomplete="off"></textarea>
+              </div>
+            </div>
+            <details class="flex-col relative-bottom10 height6em">
+              <summary>OGP用設定</summary>
+              <div class="setting">
+                <label for="ogp-url">公開ページのurl</label>
+                <input type="text" name="url" id="ogp-url">
+              </div>
+              <div class="setting">
+                <label for="ogp-site_name">公開ページのサイト名</label>
+                <input type="text" name="site_name" id="ogp-site_name">
+              </div>
+            </details>
+          </div>
+        </fieldset>
+
+      </div>
+    </form>
+
+    <form>
+      <button type="button" id="js-download">ログをダウンロード</button>
+    </form>
+
+  </main>
+
+  <footer>
+    本ページのツールの利用により如何なる損害が発生したとしてもページ製作者は一切の責任を負いません。
+    また、ツールの利用者は利用と同時に上記内容に同意したものと見做します。
+  </footer>
+
+  <script type="module" src="./main.js"></script>
+</body>
+
+</html>

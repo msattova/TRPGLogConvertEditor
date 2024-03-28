@@ -1,0 +1,4 @@
+.part{{ num }} {
+  --my-color: var(--part{{ num }}-color);
+  color: var(--my-color);
+}
