@@ -22,16 +22,58 @@
   <link rel="stylesheet" type="text/css" href="css/reset.css" />
   <link rel="stylesheet" type="text/css" href="css/style.css" />
 
-<!-- jsDelivr :: Sortable :: Latest (https://www.jsdelivr.com/package/npm/sortablejs) -->
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <!-- jsDelivr :: Sortable :: Latest (https://www.jsdelivr.com/package/npm/sortablejs) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
-<script>
-  // 削除用関数
-  const deleteElement = (id) => {
-    const target = document.querySelector(`#${id}`);
-    target.remove();
-  };
-</script>
+  <script>
+    // 削除用関数
+    const deleteElement = (id) => {
+      const target = document.querySelector(`#${id}`);
+      target.remove();
+    };
+    const getFromPreview = (id) => {
+
+      const removeSettings = () => {
+        document.querySelector('body').classList.remove('select-mode');
+      };
+
+      const checkbox = document.getElementById(id);
+      if (checkbox.checked) {
+        document.querySelector('body').classList.add('select-mode');
+        const messages = document.querySelectorAll('#js-preview div.message');
+        document.querySelector('#js-preview').addEventListener('click', (e) => {
+          let message;
+          if (e.target.classList.contains('message')) {
+            message = e.target.children[0];
+          } else if (e.target.classList.contains('name')
+            || e.target.classList.contains('text')) {
+            message = e.target.parentElement;
+          } else if (e.target.classList.contains('timestamp')) {
+            message = e.target.parentElement.parentElement
+          }
+          const hasColor = message.attributes['style'].value.match(/color:\s*(.+)/);
+          const color = (hasColor !== 'null' ? hasColor[1] : 'black');
+          const message_data = {
+            name: message.children[0].textContent,
+            color: color.replace(';', '')
+          };
+          const identifier = id.replace(/get-data-/, '');
+          console.log(identifier);
+          const input_area = {
+            color: document.querySelector(`#input-color-${identifier}`),
+            charactor_name: document.querySelector(`#input-pc-${identifier}`),
+          };
+          input_area.color.value = message_data.color;
+          input_area.charactor_name.value = message_data.name;
+          checkbox.checked = false;
+          removeSettings();
+        }, {once: true});
+      } else {
+        removeSettings();
+      }
+
+    };
+  </script>
 
 </head>
 
@@ -43,17 +85,21 @@
 
   <main>
 
-    <form>
-      <template id="js-participant-template">
-        <div class="participants-row full-width" id="participants-row">
-          <div class="handle"><b>::</b></div>
-          <div class="setting select-role">
-            <label for="role">GM / PL</label>
-            <select name="role" id="role">
-              <option value="gm">GM</option>
-              <option value="sub-gm">サブGM</option>
-              <option value="pl">PL</option>
-            </select>
+    <template id="js-participant-template">
+      <div class="participants-row full-width" id="participants-row">
+        <div class="handle"><b>::</b></div>
+        <div class="setting select-role">
+          <label for="role">GM / PL</label>
+          <select name="role" id="role">
+            <option value="gm">GM</option>
+            <option value="sub-gm">サブGM</option>
+            <option value="pl">PL</option>
+          </select>
+        </div>
+        <div>
+          <div class="checkbox full-width">
+            <input type="checkbox" name="get-data" id="get-data" onclick="getFromPreview(this.id);">
+            <label for="get-data">プレビューからデータを自動入力</label>
           </div>
           <details>
             <summary>各種設定（クリックして展開）</summary>
@@ -62,10 +108,10 @@
                 <label for="input-name">GM / PLの名前</label>
                 <input type="text" name="participant-name" id="input-name">
               </div>
-<div class="input full-width">
-  <label for="input-color">文字色</label>
-  <input type="text" name="charactor-color" id="input-color">
-</div>
+              <div class="input full-width">
+                <label for="input-color">文字色</label>
+                <input type="text" name="charactor-color" id="input-color">
+              </div>
               <div class="input full-width">
                 <label for="input-pc">キャラクターの名前</label>
                 <input type="text" name="charactor-name" id="input-pc">
@@ -80,21 +126,56 @@
               </div>
             </div>
           </details>
-          <div class="setting del">
-            <a>削除</a>
-          </div>
+        </div>
+        <div class="setting del">
+          <a>削除</a>
+        </div>
 
-        </div>
-      </template>
-      <lebel for="log-html">ログファイルを選択</lebel>
-      <input type="file" name="input-file" id="js-input" accept="text/html">
-      <div class="grid-column">
-        <div class="code">
-          <textarea name="chatlog" id="js-code"></textarea>
-        </div>
-        <div class="preview" id="js-preview">
+      </div>
+    </template>
+
+    <form>
+      <div id="js-dropzone">
+        <lebel for="log-html">ログファイルを選択</lebel>
+        <input type="file" name="input-file" id="js-input" accept="text/html">
+        <div class="grid-column">
+          <div class="code">
+            <textarea name="chatlog" id="js-code" spellcheck="false"></textarea>
+          </div>
+          <div class="preview" id="js-preview">
+          </div>
         </div>
       </div>
+
+      <div class="how2edit">
+        <details>
+          <summary>編集の仕方</summary>
+          <dl>
+            <dt>
+              上下に空行を入れて行頭に<code>$</code>
+            </dt>
+            <dd>
+              折り畳みつきのセクション。自動的に中身を隠します。
+              見出し番号が自動的に <code>N</code>になります。
+              キャラメイクログなどに
+            </dd>
+            <dt>
+              上下に空行を入れて行頭に<code>#</code>
+            </dt>
+            <dd>通常のセクション</dd>
+            <dt>
+              上下に空行を入れて行頭に<code>>>>$</code>
+            </dt>
+            <dd>折り畳み付きセクションの閉じ位置指定（必須）</dd>
+            <dt>
+              上下に空行を入れて行頭に
+              <code>>>>#</code>
+            </dt>
+            <dd>通常セクションの終了位置指定（必須）</dd>
+          </dl>
+        </details>
+      </div>
+
       <div class="flex-row">
 
         <fieldset class="participants-list">
@@ -137,7 +218,12 @@
     </form>
 
     <form>
-      <button type="button" id="js-download">ログをダウンロード</button>
+      <button type="button" id="js-download">編集したログ全体をダウンロード</button>
+      <button type="button" id="js-download-part">参加者リストをダウンロード</button>
+      <button type="button" id="js-download-chara">キャラリストをダウンロード</button>
+      <button type="button" id="js-download-index">目次をダウンロード</button>
+      <button type="button" id="js-download-main">ログ本編をダウンロード</button>
+
     </form>
 
   </main>

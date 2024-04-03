@@ -1,5 +1,6 @@
 import { formatChatlog } from "./modules/convert_chatlog.mjs";
 import { joinMessage } from "./modules/join_messages.mjs";
+import { throttle, debounce } from "./modules/eventSkip.mjs";
 import { participant, ogp_setting} from "./modules/data_struct.mjs";
 
 const fileInput = document.querySelector("#js-input");
@@ -12,11 +13,13 @@ const participantRowTemplate = document.querySelector("#js-participant-template"
 
 const downloadButton = document.querySelector("#js-download");
 
+const dropZone = document.querySelector('#js-dropzone');
+
 const regBeforeChatlog = /[\s\S]+<div class="chatlog-wrap">/;
 
 const regAfterChatlog = /<[^<]+>\s*<div class="controll hidden">[\s\S]*/;
 
-const regNotVoid = /.*\S+.*/;
+const regNotVoid = /\S+/g;
 
 /* 入力として受け取ったHTMLファイルの中身を取得 */
 const getHTML = (file) => {
@@ -39,26 +42,29 @@ const filterHTML = (htmlData) => {
   let chatlogs = htmlData.replaceAll('\n', '')
                          .replaceAll(/(<div class="main-logs">)/g, '$1\n')
                          .replaceAll("</div>", "</div>\n")
-                         .split("\n");
+                         .split("\n").filter(el => el.trim());
   let str = formatChatlog(chatlogs).join('\n');
   return str;
 };
 
 /* プレビューへの反映 */
 const reflectPreview = (code) => {
+  const start = performance.now();
   previewChatlog.innerHTML = code;
   const sections = previewChatlog.querySelectorAll('section[class="chap"]');
   for (let i = 0; i< sections.length; i++) {
     sections[i].setAttribute('id', `sec-${i+1}`)
   }
-  const sections_ = previewChatlog.querySelectorAll("section");
+  const end = performance.now();
+  console.log('reflectPreview', end - start);
+  //const sections_ = previewChatlog.querySelectorAll("section");
   //joinMessage(sections_);
 };
 
 const getParticipantsData = () => {
   const participants_list = participantResister.children;
   const participants = new Array();
-  for (const el of participants_list){
+  Array.prototype.forEach.call(participants_list, (el, i) => {
     const tmp_participant = Object.create(participant);
     tmp_participant.role = document.querySelector(`#${el.id} select[name="role"]`).value;
     tmp_participant.person_name = document.querySelector(`#${el.id} input[name="participant-name"]`).value;
@@ -66,9 +72,10 @@ const getParticipantsData = () => {
     tmp_participant.charactor_name = document.querySelector(`#${el.id} input[name="charactor-name"]`).value;
     tmp_participant.charactor_sheet = document.querySelector(`#${el.id} input[name="charactor-sheet"]`).value;
     tmp_participant.image_path = document.querySelector(`#${el.id} input[name="charactor-image"]`).value;
+    tmp_participant.index = i;
 
     participants.push(tmp_participant);
-  }
+  });
   return participants;
 };
 
@@ -115,11 +122,11 @@ const makeStyleTemplate = async () => {
 };
 
 const makePersonalStyle = (participants, personal, personal_parts, personal_root) => {
-  const define_colors = participants.map((el, i) =>
-    personal_root.replace('{{ num }}', i).replace('{{ color }}', (el.personal_color ? el.personal_color : '#000'))
+  const define_colors = participants.map((el) =>
+    personal_root.replace('{{ num }}', el.index).replace('{{ color }}', (el.personal_color ? el.personal_color : '#000'))
   ).join('\n');
-  const parts = participants.map((el, i) =>
-    personal_parts.replaceAll('{{ num }}', i)
+  const parts = participants.map((el) =>
+    personal_parts.replaceAll('{{ num }}', el.index)
   ).join('\n');
   return personal.replace('{{ define-colors }}', define_colors).replace('{{ parts }}', parts);
 };
@@ -139,30 +146,43 @@ const makeIndex = (index_preplay, index_section) => {
   return index_list.join('\n');
 };
 
-const makeLogHTML = async (participants, ogp_data) => {
-  const partsTemplates = await makePartsTemplate();
-  const stylesTemplats = await makeStyleTemplate();
-
-  const participantsHTML = participants.map((el, i) =>
+const makeParticipantsList = (partsTemplates, participants) => {
+  return participants.map((el) =>
     partsTemplates.participant.replaceAll('{{ role-lowercase }}', el.role)
                               .replaceAll('{{ role }}', el.role.toUpperCase())
-                              .replaceAll('{{ num }}', i)
+                              .replaceAll('{{ num }}', el.index)
                               .replaceAll('{{ participant-name }}', el.person_name)
                               .replaceAll('{{ charactor-name }}', el.charactor_name)
   );
-  //キャラ名の欄が空ならキャラクターリストに入れないようにしている
-  const charactorsHTML = participants.filter(el => el.charactor_name).map((el, i) =>
-    partsTemplates.charactor.replaceAll('{{ num }}', i)
+};
+
+const makeCharaList = (partsTemplates, participants) => {
+  return participants.filter(el => el.charactor_name).map((el) =>
+    partsTemplates.charactor.replaceAll('{{ num }}', el.index)
                             .replaceAll('{{ charactor-name }}', el.charactor_name)
                             .replaceAll('{{ charactor-sheet }}', el.charactor_sheet)
                             .replaceAll('{{ player-name }}', el.person_name)
                             .replaceAll('{{ image-src }}', el.image_path)
   );
+};
+
+const makeLogHTML = async (participants, ogp_data) => {
+  const partsTemplates = await makePartsTemplate();
+  const stylesTemplats = await makeStyleTemplate();
+
+  const participantsHTML = makeParticipantsList(partsTemplates, participants);
+  //キャラ名の欄が空ならキャラクターリストに入れないようにしている
+  const charactorsHTML = makeCharaList(partsTemplates, participants);
+
   const indexHTML = makeIndex(partsTemplates.index_preplay, partsTemplates.index_section);
 
   const personal_style = makePersonalStyle(participants, stylesTemplats.personal, stylesTemplats.personl_parts, stylesTemplats.personal_root);
   let ret_data = fetch('./templates/template.html').then(r=>r.text()).then(t=>{
-    const ret = t.replace('{{ reset }}', stylesTemplats.reset)
+    const ret = t.replace('{{ url }}', ogp_data.url)
+                 .replace('{{ site-description }}', ogp_data.description)
+                 .replace('{{ site-name }}', ogp_data.site_name)
+                 .replace('{{ site-description-tweet }}', ogp_data.description)
+                 .replace('{{ reset }}', stylesTemplats.reset)
                  .replace('{{ personal }}', personal_style)
                  .replace('{{ style }}', stylesTemplats.sytle)
                  .replace('{{ script }}', stylesTemplats.script)
@@ -191,6 +211,7 @@ const cloneParticipantRow = (e, selected_role="pl") => {
   const content = participantRowTemplate.content.cloneNode(true);
   const select_item = content.querySelector(".select-role");
   const input_list = content.querySelectorAll("div.input");
+  const checkbox = content.querySelector("div.checkbox");
   const del_button = content.querySelector(".del > a");
   const identifier = `${Date.now()}-${participantResister.children.length}`;
 
@@ -200,6 +221,8 @@ const cloneParticipantRow = (e, selected_role="pl") => {
   select_item.children[0].attributes['for'].value = `role-${identifier}`;
   select_item.children[1].attributes['id'].value = `role-${identifier}`;
   select_item.children[1].querySelector(`option[value="${selected_role}"]`).setAttribute("selected", true);
+  checkbox.children[1].attributes['for'].value = `get-data-${identifier}`;
+  checkbox.children[0].attributes['id'].value = `get-data-${identifier}`;
   for (let i=0; i<input_list.length; i++) {
     const base_id = input_list[i].children[1].attributes['id'].value;
     input_list[i].children[0].attributes['for'].value = `${base_id}-${identifier}`;
@@ -225,52 +248,58 @@ fileInput.addEventListener('change', async (e) => {
   reflectPreview(filtered);
 });
 
-/* textareaの文字列が編集された時の処理 */
-codeChatlog.addEventListener('input', (e) => {
-  const replaced = e.target.value.replaceAll(/(<div.+>)\n/g, '$1');
+const regCommand = /\n\?==([a-z]{3}):([a-z]{2,})==\s*\n/;
 
-  const preplayHeader = replaced.replace(/\n\$\s(.+)\n/g, '\n<section class="preplay" id="chara-make"><h2>$1</h2><details><summary>クリックして$1を開く</summary>\n<div class="chatlog">\n');
-
-  const includeHeader = preplayHeader.replaceAll(/\n#\s(.+)\n/g, '\n<section class="chap"><h2>$1</h2>\n<div class="chatlog">\n');
-
-
-  const splited = includeHeader.split('\n').filter(val => regNotVoid.exec(val));
-
-
-  let hasSection = false;
-
-  for (let i in splited) {
-    if(splited[i].match(/<section/)) {
-      if (hasSection){
-        splited[i] = `</div></section>${splited[i]}`;
-      }
-      hasSection = !hasSection;
+const commandDo = (code) => {
+  console.log(code);
+  if (regCommand.test(code)) {
+    const [command, input] = regCommand.exec(code).slice(1);
+    if (command=="del" && input=="up") {
+      return code.replace(/[\s\S\n]*\?==del:up==/, '');
     }
+  } else {
+    return code;
   }
+};
 
-  let preplay = false;
+const whenEdit = (code) => {
+  const replaced = code.replaceAll(/(<div.+>)\n/g, '$1');
 
-  for (let i in splited) {
-    if(splited[i].match(/<details/)) {
-      preplay = true;
-    }
-    if (preplay && splited[i].match(/<\/section>/)) {
-      splited[i] = splited[i].replace(/<\/div><\/section>(.+)/, `</div></details></section>$1`);
-      break;
-    }
-  }
+  const insertHeader = replaced.replaceAll(/\n\$\s(.+)\n/g, '\n<section class="preplay" id="chara-make"><h2>$1</h2><details><summary>クリックして$1を開く</summary>\n<div class="chatlog">\n')
+                                .replaceAll(/\n#\s(.+)\n/g, '\n<section class="chap"><h2>$1</h2>\n<div class="chatlog">\n')
+                                .replaceAll(/\n>{3,}\$\n/g, '\n</div></details></section>\n')
+                                .replaceAll(/\n>{3,}#\n/g, '\n</div></section>\n');
+
+  const insertPics = insertHeader.replaceAll(/\n<&(?<comment>.*)@"(?<path>.*)";(?<alt>.*)&>\n/g, '\n<figure class="insert-pic"><img src="$<path>" alt="$<alt>"><figcaption>$<comment></figcaption></figure>\n')
+
+  const splited = insertPics.split('\n').filter(val => regNotVoid.exec(val));
 
   reflectPreview(splited.join('\n'));
-  let el;
-  if (document.querySelector('#js-preview .chatlog') !== undefined) {
-    el = document.querySelector('#js-preview .chatlog');
-  } else {
-    el = document.querySelector('#js-preview');
-  }
-  Sortable.create(el, {
-    animation: 150
-  });
 
+};
+
+/* textareaの文字列が編集された時の処理 */
+/**
+ * 文法
+ * 上下に空行のある`# ○○○`：セクション見出しの指定
+ * >>>#：セクション閉じ位置指定（>は3個以上ならいくつでも）
+ * 上下に空行のある`$ ○○○`：プリプレイセクション見出しの指定
+ * >>>$：プリプレイ閉じ位置指定（>は3個以上ならいくつでも）
+ * 上下に空行のある<& comment @"img_path"?"altテキスト"&/>：画像の挿入指定
+ * 上下に空行のある?==del:up==：【制御コマンド】そこから上の行は全削除
+ */
+
+
+
+// コマンドはフォーカスが外れた時に実行
+codeChatlog.addEventListener('change', () => {
+  codeChatlog.value = commandDo(codeChatlog.value);
+  whenEdit(codeChatlog.value);
+});
+
+
+codeChatlog.addEventListener('input', (e) => {
+  debounce(() => whenEdit(e.target.value), 1000)();
 });
 
 addParticipantButton.addEventListener('click', cloneParticipantRow);
@@ -282,6 +311,67 @@ downloadButton.addEventListener('click', async (e) => {
   const data = await makeLogHTML(participants, ogp_data);
   downloadHTML(`${ogp_data.title}-log.html`, data);
 }, false);
+
+document.querySelector('#js-download-part').addEventListener('click', async (e) => {
+  const participants = getParticipantsData();
+  const ogp_data = getOGPData();
+  const partsTemplates = await makePartsTemplate();
+  const data = makeParticipantsList(partsTemplates, participants).join('\n');
+  downloadHTML(`${ogp_data.title}-participants.html`, data);
+}, false);
+
+document.querySelector('#js-download-chara').addEventListener('click', async (e) => {
+  const participants = getParticipantsData();
+  const ogp_data = getOGPData();
+  const partsTemplates = await makePartsTemplate();
+  const data = makeCharaList(partsTemplates, participants).join('\n');
+  downloadHTML(`${ogp_data.title}-charactors.html`, data);
+}, false);
+
+document.querySelector('#js-download-index').addEventListener('click', async (e) => {
+  const ogp_data = getOGPData();
+  const partsTemplates = await makePartsTemplate();
+  const data = makeIndex(partsTemplates.index_preplay, partsTemplates.index_section);
+  downloadHTML(`${ogp_data.title}-index.html`, data);
+}, false);
+
+document.querySelector('#js-download-main').addEventListener('click', async (e) => {
+  const ogp_data = getOGPData();
+  const data = await fetch('./templates/main_logs.html').then(r=>r.text()).then(t=>{
+    const ret = t.replace('{{ chatlogs }}', previewChatlog.innerHTML);
+    return ret;
+  });
+  downloadHTML(`${ogp_data.title}-mainlogs.html`, data);
+}, false);
+
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+});
+
+dropZone.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if(file !== 'undefined') {
+    fileInput.file = file;
+    if (!file) return;
+    const text = await getHTML(file);
+    const chatlogs = removeNotChatlog(text);
+    const filtered = filterHTML(chatlogs);
+    codeChatlog.value = filtered;
+    reflectPreview(filtered);
+  } else {
+    // pass
+  }
+});
+
+
 
 /* ページロード時に自動的に列を生成するようにする */
 cloneParticipantRow(null, "gm");

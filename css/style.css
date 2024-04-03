@@ -295,6 +295,12 @@ section.preplay[id]::before {
   flex-direction: column;
 }
 
+.checkbox {
+  display: flex;
+  flex-direction: row;
+  column-gap: 12px;
+}
+
 .del {
   display: flex;
   align-items: flex-end;
@@ -325,4 +331,39 @@ section.preplay[id]::before {
 
 .full-width {
   width: 100%;
+}
+
+.dragover {
+  background-color: #ddd;
+  border: 4px dashed #666;
+  border-radius: 6px;
+}
+
+.how2edit {
+  padding: 12px;
+  background-color: #ddd;
+
+  details {
+    display: flex;
+    flex-direction: column;
+  }
+  dl > dt {
+    display: block;
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+  dl > dd {
+    display: block;
+    margin-left: 2em;
+  }
+}
+
+.select-mode {
+  cursor: pointer;
+
+  .preview div.message:hover {
+    background-color: #eee;
+    border: 1px dashed hsla(0, 0%, 75%, 0.22);
+  }
+
 }

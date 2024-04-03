@@ -25,8 +25,7 @@ const replaceDiv = (line) => {
   <div class="message ${tab}" ${style}>
     <div class="name">${name}</div>
     <div class="text">${text}<span class="timestamp">${timestamp}</span></div>
-  </div>
-  `;
+  </div>`;
 };
 
 export {formatChatlog};

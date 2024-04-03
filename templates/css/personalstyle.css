@@ -7,3 +7,12 @@
 .participants li .charactor-name::before {
   background-color: var(--my-color);
 }
+
+/* タブ名表示の設定 */
+.tab2 .name::before {
+  content: "【サブ】";
+}
+
+.tab3 .name::before {
+  content: "【雑談】";
+}

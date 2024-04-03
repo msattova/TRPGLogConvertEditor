@@ -13,39 +13,43 @@
         <li><span class="term">移動力</span>{{ move-point }}</li>
         <li><span class="term">防護点</span>{{ defence-point }}</li>
       </ul>
-      <table class="battle-data">
-        <thead>
-          <tr>
-            <th></th>
-            <th>器用</th>
-            <th>敏捷</th>
-            <th>筋力</th>
-            <th>生命</th>
-            <th>知力</th>
-            <th>精神</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th>能力値</th>
-            <td>{{ dex }}</td>
-            <td>{{ agi }}</td>
-            <td>{{ mus }}</td>
-            <td>{{ liv }}</td>
-            <td>{{ int }}</td>
-            <td>{{ min }}</td>
-          </tr>
-          <tr>
-            <th>能力値ボーナス</th>
-            <td>{{ dex/6 }}</td>
-            <td>{{ agi/6 }}</td>
-            <td>{{ mus/6 }}</td>
-            <td>{{ liv/6 }}</td>
-            <td>{{ int/6 }}</td>
-            <td>{{ min/6 }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="dataComment">
+        <table class="battle-data">
+          <thead>
+            <tr>
+              <th></th>
+              <th>器用</th>
+              <th>敏捷</th>
+              <th>筋力</th>
+              <th>生命</th>
+              <th>知力</th>
+              <th>精神</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>能力値</th>
+              <td>{{ dex }}</td>
+              <td>{{ agi }}</td>
+              <td>{{ mus }}</td>
+              <td>{{ liv }}</td>
+              <td>{{ int }}</td>
+              <td>{{ min }}</td>
+            </tr>
+            <tr>
+              <th>能力値ボーナス</th>
+              <td>{{ dex/6 }}</td>
+              <td>{{ agi/6 }}</td>
+              <td>{{ mus/6 }}</td>
+              <td>{{ liv/6 }}</td>
+              <td>{{ int/6 }}</td>
+              <td>{{ min/6 }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <small><!-- 注釈を入れたい場合はここに --></small>
+      </div>
+
       <ul class="skill-data">
         <li><span class="term">{{ skill-1 }}</span><span class="lv">{{ skill-lv }}</span></li>
       </ul>

@@ -300,7 +300,7 @@ html.is-drawerActive {
 }
 
 .main-logs h2 {
-  padding-left: 3.6em;
+  padding-left: 3.6em
 }
 
 /* 章番号表示 */
@@ -516,6 +516,19 @@ html.is-drawerActive {
   max-height: 140px;
 }
 
+figure.insert-pic {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+figure.insert-pic img {
+  max-height: 40vh;
+  object-fit: cover;
+  object-position: top center;
+}
+
 .chara a {
   font-weight: bold;
 }
@@ -554,8 +567,8 @@ input[checkbox] {
   display: none;
 }
 
-.tab2,
-.tab3 {
+/*タブ1以外に適用するスタイル*/
+[class*=tab]:not(.tab1) {
   margin-left: 2.2em;
   padding-left: 8px;
   text-indent: 0;
@@ -563,23 +576,13 @@ input[checkbox] {
   border-left: 5px hsl(235.7, 5.6%, 49%) double;
 }
 
-.tab2::before,
-.tab3::before {
+[class*=tab]:not(.tab1)::before {
   font-size: medium;
   font-weight: bold;
   padding-right: 3px;
 }
 
-.tab2 .name::before {
-  content: "【サブ】";
-}
-
-.tab3 .name::before {
-  content: "【雑談】";
-}
-
-.is-disable .tab2,
-.is-disable .tab3 {
+.is-disable [class*=tab]:not(.tab1) {
   display: none;
 }
 

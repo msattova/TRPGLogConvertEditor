@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="format-detection" content="telephone=no" />
+  <!--- discord等で埋め込みが表示されるようにするためのOGP設定 --->
+  <meta property="og:url" content="#" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="データフォーマッター" />
+  <meta property="og:description" content="TRPGセッションログのコンバーターです" />
+  <meta property="og:site_name" content="" />
+  <meta name="twitter:card" content="TRPGセッションログのコンバーターです" />
+  <!----->
+
+  <base target="_self" />
+
+  <title>データフォーマッター</title>
+
+  <link rel="stylesheet" type="text/css" href="../css/reset.css" />
+  <link rel="stylesheet" type="text/css" href="../css/style.css" />
+  <link rel="stylesheet" type="text/css" href="../css/data_style.css">
+
+</head>
+
+<body>
+
+  <header>
+    <h1>データフォーマッター</h1>
+  </header>
+
+
+
+  <main>
+    <template id="js-skill-listitem">
+      <li><span class="term"></span><span class="lv"></span></li>
+    </template>
+    <form>
+      <div id="js-dropzone">
+        <lebel for="log-html">JSONファイルを選択</lebel>
+        <input type="file" name="input-file" id="js-input" accept="application/json">
+        <div id="js-datasheet">
+          <div class="data ally">
+            <article>
+              <div class="first-row">
+                <h3><span class="lv">Lv.<span class="adv-lv"></span></span><span class="pc-name"></span></h3>
+                <div class="race"></div>
+              </div>
+              <div class="parameter">
+                <ul class="status">
+                  <li><span class="term">HP</span><span class="hp"></span></li>
+                  <li><span class="term">MP</span><span class="mp"></span></li>
+                  <li><span class="term">生命抵抗</span><span class="resist-vit"></span></li>
+                  <li><span class="term">精神抵抗</span><span class="resist-mnd"></span></li>
+                  <li><span class="term">移動力</span><span class="move-point"></span></li>
+                  <li><span class="term">防護点</span><span class="guard-point"></span></li>
+                </ul>
+                <div class="dataComment">
+                  <table class="battle-data">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th>器用</th>
+                        <th>敏捷</th>
+                        <th>筋力</th>
+                        <th>生命</th>
+                        <th>知力</th>
+                        <th>精神</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th>能力値</th>
+                        <td><span class="agi"></span></td>
+                        <td><span class="dex"></span></td>
+                        <td><span class="mus"></span></td>
+                        <td><span class="vit"></span></td>
+                        <td><span class="int"></span></td>
+                        <td><span class="mnd"></span></td>
+                      </tr>
+                      <tr>
+                        <th>能力値ボーナス</th>
+                        <td><span class="agi-b"></span></td>
+                        <td><span class="dex-b"></span></td>
+                        <td><span class="mus-b"></span></td>
+                        <td><span class="vit-b"></span></td>
+                        <td><span class="int-b"></span></td>
+                        <td><span class="mnd-b"></span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <small></small>
+                </div>
+                <ul class="skill-data">
+                </ul>
+              </div>
+              <hr>
+              <div class="description">
+                <details>
+                  <summary>容姿・経歴・その他メモ</summary>
+                  <div class="memo"></div>
+                </details>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <form>
+      <button type="button" id="js-download">作成したHTMLをダウンロード</button>
+
+    </form>
+
+  </main>
+
+  <footer>
+    本ページのツールの利用により如何なる損害が発生したとしてもページ製作者は一切の責任を負いません。
+    また、ツールの利用者は利用と同時に上記内容に同意したものと見做します。
+  </footer>
+
+  <script src="./script_subpage.js"></script>
+</body>
+
+</html>

@@ -5,7 +5,8 @@ export const participant = {
     personal_color: '',
     charactor_name: '',
     charactor_sheet: '',
-    image_path: ''
+    image_path: '',
+    index: 0
 };
 
 

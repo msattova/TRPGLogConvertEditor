@@ -1,0 +1,157 @@
+.data {
+  border: 2px hsl(0, 0%, 40%) solid;
+  padding: 4px 12px;
+  margin: 2em 1em;
+  background-color: hsl(0, 0%, 95%);
+  width: fit-content;
+}
+
+.data article {
+  display: flex;
+  flex-direction: column;
+  place-items: center;
+}
+
+.data article .first-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  position: relative;
+  padding: .8rem 1.2rem;
+  border-bottom: 2px solid black;
+  letter-spacing: .1em;
+  margin-bottom: .8em;
+  width: 100%;
+}
+
+.data article .ref-page,
+.data article .race {
+  display: flex;
+  font-size: small;
+  align-items: flex-end;
+}
+
+.data h3>.lv {
+  font-size: small;
+  margin: 0 2em 0 1em;
+}
+
+.data span.timestamp {
+  display: block;
+  text-align: end;
+}
+
+.data .parameter>ul {
+  list-style-type: none;
+}
+
+.data .status {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  font-size: 90%;
+}
+
+.data .status .term::after {
+  content: ": ";
+  margin: 0 4px;
+}
+
+.data .parameter>.dataComment {
+  display: grid;
+  grid-template-rows: [table] auto [comment] auto;
+  row-gap: 3px;
+  place-content: center;
+  margin: .8em auto;
+}
+
+.data .parameter table {
+  border-collapse: collapse;
+  border: 2px solid hsl(0, 0%, 20%);
+  font-size: .8em;
+  margin: auto;
+}
+
+.data .parameter table.battle-data {
+  text-align: center;
+}
+
+.data .parameter table.battle-data thead {
+  background-color: hsl(0, 0%, 20%);
+  color: #fff;
+}
+
+.data .parameter table th,
+.data .parameter table td {
+  padding: 2px .6em;
+  border: 1px solid hsl(0, 0%, 20%);
+}
+
+.data .parameter table.reward-data {
+  text-align: left;
+  min-width: 80%;
+  max-width: 100%;
+}
+
+.data .parameter table.reward-data th {
+  background-color: hsl(0, 0%, 85%);
+  color: #000;
+}
+
+.data .parameter .skill-data {
+  margin: 0 auto;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto;
+  row-gap: 4px;
+  column-gap: 1.5em;
+}
+
+.data .parameter .skill-data li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 1.2em;
+}
+
+.data .parameter>dl,
+.data .description {
+  font-size: 90%;
+  margin: .6em 0;
+}
+
+.data .parameter .term,
+.data .parameter dt,
+.data .parameter .lv {
+  font-weight: bold;
+}
+
+.data .parameter,
+.data .description {
+  padding: 0 1em;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.data .description,
+.data .parameter dd {
+  text-indent: 1em;
+}
+
+.data hr {
+  margin: .8em 0;
+  width: 100%;
+  border: none;
+  border-top: 3px double #333;
+}
+
+.data .memo h3 {
+  font-size: medium;
+}
+
+.data .memo details {
+  background-color: hsla(0, 0%, 80%, 40%);
+  padding-left: 2em;
+}
