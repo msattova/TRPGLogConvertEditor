@@ -49,16 +49,11 @@ const filterHTML = (htmlData) => {
 
 /* プレビューへの反映 */
 const reflectPreview = (code) => {
-  const start = performance.now();
   previewChatlog.innerHTML = code;
   const sections = previewChatlog.querySelectorAll('section[class="chap"]');
   for (let i = 0; i< sections.length; i++) {
     sections[i].setAttribute('id', `sec-${i+1}`)
   }
-  const end = performance.now();
-  console.log('reflectPreview', end - start);
-  //const sections_ = previewChatlog.querySelectorAll("section");
-  //joinMessage(sections_);
 };
 
 const getParticipantsData = () => {
@@ -299,7 +294,7 @@ codeChatlog.addEventListener('change', () => {
 
 
 codeChatlog.addEventListener('input', (e) => {
-  debounce(() => whenEdit(e.target.value), 1000)();
+  debounce(() => whenEdit(e.target.value), 500)();
 });
 
 addParticipantButton.addEventListener('click', cloneParticipantRow);
