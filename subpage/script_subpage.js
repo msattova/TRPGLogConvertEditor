@@ -35,6 +35,8 @@ const datasheet = document.querySelector('#js-datasheet .ally');
 
 const downloadButton = document.querySelector("#js-download");
 
+const downloadCSSButton = document.querySelector("#js-download-css");
+
 
 const regSkill = /([^\d]+)(\d+)/;
 
@@ -172,5 +174,10 @@ const downloadHTML = (filename, data) => {
 
 downloadButton.addEventListener('click', async (e) => {
   const data = datasheet.innerHTML;
-  downloadHTML(`datasheet-log.html`, data);
+  downloadHTML(`datasheet.html`, data);
+}, false);
+
+downloadCSSButton.addEventListener('click', async (e) => {
+  const data = await fetch('../css/data_style.css').then(r=>r.text());;
+  downloadHTML(`datasheet.css`, data);
 }, false);
