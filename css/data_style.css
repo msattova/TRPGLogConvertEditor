@@ -13,10 +13,11 @@
 }
 
 .data article .first-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  flex-direction: column;
   position: relative;
   padding: .8rem 1.2rem;
+  padding-bottom: .2rem;
   border-bottom: 2px solid black;
   letter-spacing: .1em;
   margin-bottom: .8em;
@@ -28,11 +29,20 @@
   display: flex;
   font-size: small;
   align-items: flex-end;
+  position: relative;
+  left: 20px;
+  justify-content: flex-end;
 }
 
 .data h3>.lv {
-  font-size: small;
+  font-size: .8em;
   margin: 0 2em 0 1em;
+  position: relative;
+  left: -20px;
+
+  .adv-lv {
+    font-size: 1.2em;
+  }
 }
 
 .data span.timestamp {
@@ -42,6 +52,7 @@
 
 .data .parameter>ul {
   list-style-type: none;
+  font-weight: bold;
 }
 
 .data .status {
@@ -121,9 +132,7 @@
   margin: .6em 0;
 }
 
-.data .parameter .term,
-.data .parameter dt,
-.data .parameter .lv {
+.data .parameter {
   font-weight: bold;
 }
 
@@ -154,4 +163,25 @@
 .data .memo details {
   background-color: hsla(0, 0%, 80%, 40%);
   padding-left: 2em;
+}
+
+.data table td {
+  .dex,
+  .agi,
+  .mus,
+  .vit,
+  .int,
+  .mnd {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-end;
+
+    .add {
+      font-weight: bold;
+      color: hsl(0deg 100% 40%);
+      mix-blend-mode: multiply;
+    }
+
+  }
 }

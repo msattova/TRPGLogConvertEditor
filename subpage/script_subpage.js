@@ -15,6 +15,12 @@ const allyData = {
   vit: 0,
   int: 0,
   mnd: 0,
+  addAgi: 0,
+  addDex: 0,
+  addMus: 0,
+  addVit: 0,
+  addInt: 0,
+  addMnd: 0,
   agiB: 0,
   dexB: 0,
   musB: 0,
@@ -51,12 +57,12 @@ const fillDatasheet = (data) => {
   datasheet.querySelector('.move-point').textContent = data.movePoint;
   datasheet.querySelector('.guard-point').textContent = data.guardPoint;
 
-  datasheet.querySelector('.battle-data .agi').textContent = data.agi;
-  datasheet.querySelector('.battle-data .dex').textContent = data.dex;
-  datasheet.querySelector('.battle-data .vit').textContent = data.vit;
-  datasheet.querySelector('.battle-data .mus').textContent = data.mus;
-  datasheet.querySelector('.battle-data .int').textContent = data.int;
-  datasheet.querySelector('.battle-data .mnd').textContent = data.mnd;
+  datasheet.querySelector('.battle-data .agi').innerHTML = (data.addAgi !== undefined) ? `${data.agi}<span class="add">+${data.addAgi}</span>` : data.agi;
+  datasheet.querySelector('.battle-data .dex').innerHTML = (data.addDex !== undefined) ? `${data.dex}<span class="add">+${data.addDex}</span>` : data.dex;
+  datasheet.querySelector('.battle-data .vit').innerHTML = (data.addVit !== undefined) ? `${data.vit}<span class="add">+${data.addVit}</span>` : data.vit;
+  datasheet.querySelector('.battle-data .mus').innerHTML = (data.addMus !== undefined) ? `${data.mus}<span class="add">+${data.addMus}</span>` : data.mus;
+  datasheet.querySelector('.battle-data .int').innerHTML = (data.addInt !== undefined) ? `${data.int}<span class="add">+${data.addInt}</span>` : data.int;
+  datasheet.querySelector('.battle-data .mnd').innerHTML = (data.addMnd !== undefined) ? `${data.mnd}<span class="add">+${data.addMnd}</span>` : data.mnd;
 
   datasheet.querySelector('.battle-data .agi-b').textContent = data.agiB;
   datasheet.querySelector('.battle-data .dex-b').textContent = data.dexB;
@@ -107,6 +113,12 @@ const readJSON = async (file) => {
   object_data.mnd = json.sttMnd;
   object_data.mus = json.sttStr;
   object_data.vit = json.sttVit;
+  object_data.addAgi = json.sttAddB;
+  object_data.addDex = json.sttAddA;
+  object_data.addInt = json.sttAddC;
+  object_data.addMnd = json.sttAddD;
+  object_data.addMus = json.sttAddE;
+  object_data.addVit = json.sttAddF;
   object_data.agiB = json.bonusAgi;
   object_data.dexB = json.bonusDex;
   object_data.intB = json.bonusInt;
