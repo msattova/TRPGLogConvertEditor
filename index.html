@@ -26,6 +26,9 @@
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
   <script>
+
+    const reg_hexcolor = /\#?([0-9a-f]{6}|[0-9a-f]{3})/;
+
     // 削除用関数
     const deleteElement = (id) => {
       const target = document.querySelector(`#${id}`);
@@ -63,7 +66,8 @@
             color: document.querySelector(`#input-color-${identifier}`),
             charactor_name: document.querySelector(`#input-pc-${identifier}`),
           };
-          input_area.color.value = message_data.color;
+          input_area.color.value = message_data.color.replace('#', '');
+          reflectColor(input_area.color.id);
           input_area.charactor_name.value = message_data.name;
           checkbox.checked = false;
           removeSettings();
@@ -73,6 +77,18 @@
       }
 
     };
+
+    const reflectColor = (id) => {
+      const input_value = document.getElementById(id).parentNode.children[1].value;
+      const target = document.getElementById(id).parentNode.children[2];
+      const reg_result = reg_hexcolor.exec(input_value);
+      if (reg_result !== null){
+        const ctx = target.getContext("2d");
+        ctx.fillStyle = `#${reg_result[1]}`;
+        ctx.fillRect(0, 0, 300, 300);
+      }
+    }
+
   </script>
 
 </head>
@@ -107,23 +123,35 @@
             <div class="setting col">
               <div class="input full-width">
                 <label for="input-name">GM / PLの名前</label>
-                <input type="text" name="participant-name" id="input-name">
+                <div class="flex-row">
+                  <input type="text" name="participant-name" id="input-name">
+                </div>
               </div>
               <div class="input full-width">
                 <label for="input-color">文字色</label>
-                <input type="text" name="charactor-color" id="input-color">
+                <div class="flex-row flex-align-center">
+                  <span>#</span>
+                  <input type="text" name="charactor-color" id="input-color">
+                  <canvas id="color-sample">色サンプル</canvas>
+                </div>
               </div>
               <div class="input full-width">
                 <label for="input-pc">キャラクターの名前</label>
-                <input type="text" name="charactor-name" id="input-pc">
+                <div class="flex-row">
+                  <input type="text" name="charactor-name" id="input-pc">
+                </div>
               </div>
               <div class="input full-width">
                 <label for="input-charasheet">キャラシのURL</label>
-                <input type="text" name="charactor-sheet" id="input-charasheet">
+                <div class="flex-row">
+                  <input type="text" name="charactor-sheet" id="input-charasheet">
+                </div>
               </div>
               <div class="input full-width">
                 <label for="input-charaimage">キャラ立ち絵へのパス<br />（※HTMLがわかる人向け。&lt;img&gt;タグのsrc属性に指定する値を入れてください）</label>
-                <input type="text" name="charactor-image" id="input-charaimage">
+                <div class="flex-row">
+                  <input type="text" name="charactor-image" id="input-charaimage">
+                </div>
               </div>
             </div>
           </details>

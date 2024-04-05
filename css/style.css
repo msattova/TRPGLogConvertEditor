@@ -57,6 +57,9 @@ footer {
   column-gap: 8px;
 }
 
+.flex-align-center {
+  align-items: center;
+}
 
 .preview {
     overflow: scroll;
@@ -295,6 +298,21 @@ section.preplay[id]::before {
   flex-direction: column;
 }
 
+.input canvas {
+  height: 20px;
+  width: 20px;
+  border: 1px solid #000;
+}
+
+.input span {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+input[id^=input-color] {
+  width: 12em;
+}
+
 .checkbox {
   display: flex;
   flex-direction: row;
@@ -338,6 +356,7 @@ section.preplay[id]::before {
   border: 4px dashed #666;
   border-radius: 6px;
 }
+
 
 .how2edit {
   padding: 12px;

@@ -218,10 +218,19 @@ const cloneParticipantRow = (e, selected_role="pl") => {
   select_item.children[1].querySelector(`option[value="${selected_role}"]`).setAttribute("selected", true);
   checkbox.children[1].attributes['for'].value = `get-data-${identifier}`;
   checkbox.children[0].attributes['id'].value = `get-data-${identifier}`;
+
   for (let i=0; i<input_list.length; i++) {
-    const base_id = input_list[i].children[1].attributes['id'].value;
+    const input_element = input_list[i].children[1].querySelector('input[id]');
+    const base_id = input_element.attributes['id'].value;
+
     input_list[i].children[0].attributes['for'].value = `${base_id}-${identifier}`;
-    input_list[i].children[1].attributes['id'].value = `${base_id}-${identifier}`;
+    input_element.attributes['id'].value = `${base_id}-${identifier}`;
+    input_element.setAttribute("onchange", `reflectColor("${base_id}-${identifier}")`);
+    if (base_id === "input-color") {
+      console.log(input_element.parentNode.children["color-sample"]);
+      const canvas_id = input_element.parentNode.children["color-sample"].attributes['id'].value;
+      input_element.parentNode.children["color-sample"].attributes['id'].value = `${canvas_id}-${identifier}`
+    }
   }
 
   participants_row.attributes['id'].value = `${participants_row.id}-${identifier}`;
