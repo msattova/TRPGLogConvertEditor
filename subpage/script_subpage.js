@@ -41,8 +41,11 @@ const datasheet = document.querySelector('#js-datasheet .ally');
 
 const downloadButton = document.querySelector("#js-download");
 
+const downloadJSONButton = document.querySelector("#js-download-json");
+
 const downloadCSSButton = document.querySelector("#js-download-css");
 
+let nowData = Object();
 
 const regSkill = /([^\d]+)(\d+)/;
 
@@ -137,8 +140,11 @@ const readJSON = async (file) => {
   object_data.skillData = json.sheetDescriptionS.replace(/.+\n技能:(.+)/, "$1").split('／');
   object_data.description = json.freeNote.replaceAll('&lt;', '<').replaceAll('&gt;', '>');
 
+  nowData = object_data;
   return object_data;
 };
+
+
 
 /* ファイル読み込み時の処理 */
 fileInput.addEventListener('change', async (e) => {
@@ -187,6 +193,10 @@ const downloadHTML = (filename, data) => {
 downloadButton.addEventListener('click', async (e) => {
   const data = datasheet.innerHTML;
   downloadHTML(`datasheet.html`, data);
+}, false);
+
+downloadJSONButton.addEventListener('click', async (e) => {
+  downloadHTML(`datasheet-${nowData.name}.json`, JSON.stringify(nowData));
 }, false);
 
 downloadCSSButton.addEventListener('click', async (e) => {
