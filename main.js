@@ -21,6 +21,8 @@ const regAfterChatlog = /<[^<]+>\s*<div class="controll hidden">[\s\S]*/;
 
 const regNotVoid = /\S+/g;
 
+const toIndex = '<div class="to-index"><a href="#index">【目次へ戻る】</a></div>';
+
 /* 入力として受け取ったHTMLファイルの中身を取得 */
 const getHTML = (file) => {
   return new Promise((resolve) => {
@@ -267,12 +269,15 @@ const commandDo = (code) => {
 };
 
 const whenEdit = (code) => {
+
   const replaced = code.replaceAll(/(<div.+>)\n/g, '$1');
 
   const insertHeader = replaced.replaceAll(/\n\$\s(.+)\n/g, '\n<section class="preplay" id="chara-make"><h2>$1</h2><details><summary>クリックして$1を開く</summary>\n<div class="chatlog">\n')
                                 .replaceAll(/\n#\s(.+)\n/g, '\n<section class="chap"><h2>$1</h2>\n<div class="chatlog">\n')
                                 .replaceAll(/\n>{3,}\$\n/g, '\n</div></details></section>\n')
-                                .replaceAll(/\n>{3,}#\n/g, '\n</div></section>\n');
+                                .replaceAll(/\n>{3,}#\n/g, '\n</div></section>\n')
+                                .replaceAll(/\n>{3,}\$i\n/g, `\n</div></details>${toIndex}</section>\n`)
+                                .replaceAll(/\n>{3,}#i\n/g, `\n</div>${toIndex}</section>\n`);
 
   const insertPics = insertHeader.replaceAll(/\n<&(?<comment>.*)@"(?<path>.*)";(?<alt>.*)&>\n/g, '\n<figure class="insert-pic"><img src="$<path>" alt="$<alt>"><figcaption>$<comment></figcaption></figure>\n')
 
@@ -289,6 +294,7 @@ const whenEdit = (code) => {
  * >>>#：セクション閉じ位置指定（>は3個以上ならいくつでも）
  * 上下に空行のある`$ ○○○`：プリプレイセクション見出しの指定
  * >>>$：プリプレイ閉じ位置指定（>は3個以上ならいくつでも）
+ * >>>[#$]i：閉じ位置指定の直前に「目次へ戻る」リンクを設置
  * 上下に空行のある<& comment @"img_path"?"altテキスト"&/>：画像の挿入指定
  * 上下に空行のある?==del:up==：【制御コマンド】そこから上の行は全削除
  */
