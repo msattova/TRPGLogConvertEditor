@@ -196,7 +196,7 @@ downloadButton.addEventListener('click', async (e) => {
 }, false);
 
 downloadJSONButton.addEventListener('click', async (e) => {
-  downloadHTML(`datasheet-${nowData.name}.json`, JSON.stringify(nowData));
+  downloadHTML(`datasheet-${nowData.pcName}.json`, JSON.stringify(nowData));
 }, false);
 
 downloadCSSButton.addEventListener('click', async (e) => {
